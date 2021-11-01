@@ -1,15 +1,6 @@
 # ZelauxMindustryModTamplate
 A Java Mindustry mod template with ZelauxModCore that works on Android and PC.
-
-## Using
-- You must visit [ZelauxModCore github](https://github.com/Zelaux/ZelauxModCore)
-- Replace the `YourMod` prefix for all classes with the name of your mod.
-- Set your classPrefix for generated classes in `annotations.properties`
-- If you want a package like "com.company.CompanyName" you must add line bellow with our package name to the `annotations.properties`
-```properties
-rootPackage=YOUR_PACKAGE_NAME
-```
-- Do not forget to change package in tools/build.gradle(the variable named `imagePackerPath`)
+Do not forget to visit [ZelauxModCore github](https://github.com/Zelaux/ZelauxModCore)
 
 ## Building for Desktop Testing
 
