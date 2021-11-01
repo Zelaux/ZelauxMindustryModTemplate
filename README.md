@@ -3,13 +3,13 @@ A Java Mindustry mod template with ZelauxModCore that works on Android and PC.
 
 ## Using
 - You must visit [ZelauxModCore github](https://github.com/Zelaux/ZelauxModCore)
-- Replace the ```YourMod``` prefix for all classes with the name of your mod.
-- Set your classPrefix for generated classes in ```annotations.properties```
-- If you want a package like "com.company.CompanyName" you must add line bellow with our package name to the ```annotations.properties```
+- Replace the `YourMod` prefix for all classes with the name of your mod.
+- Set your classPrefix for generated classes in `annotations.properties`
+- If you want a package like "com.company.CompanyName" you must add line bellow with our package name to the `annotations.properties`
 ```properties
 rootPackage=YOUR_PACKAGE_NAME
 ```
-- Do not forget to change package in tools/build.gradle(the variable named ```imagePackerPath```)
+- Do not forget to change package in tools/build.gradle(the variable named `imagePackerPath`)
 
 ## Building for Desktop Testing
 
@@ -17,6 +17,16 @@ rootPackage=YOUR_PACKAGE_NAME
 2. Run `gradlew jar` [1].
 3. Your mod jar will be in the `build/libs` directory. **Only use this version for testing on desktop. It will not work with Android.**
 To build an Android-compatible version, you need the Android SDK. You can either let Github Actions handle this, or set it up yourself. See steps below.
+
+## Auto move to mod folders after build (Desktop)
+
+1. Create `modDirectories.txt` file in mod root
+2. add your pathes(you can write `classic` and mod will be moved to the mindustry mods folder) for example:
+```
+classic
+C:/someFolder1/someFolrder2/modsFolder
+```
+4. Repeat steps from `Building for Desktop Testing`, but use `gradlew mjar` instead of `gradlew jar`
 
 ## Building through Github Actions
 
