@@ -2,9 +2,8 @@ buildscript{
     ext{
         mainPackage = "yourmod";
 
-        arcHash = 'v133'
-        mindustryVersion = 'v133'
-        modCoreVersion = "32520b1c4be"
+        mindustryVersion = 'v135'
+        modCoreVersion = "69265233121"
     }
     repositories{
         mavenLocal()
@@ -20,16 +19,15 @@ buildscript{
         classpath "com.github.Anuken.Arc:arc-core:$mindustryVersion"
         classpath "com.github.Anuken.Mindustry:core:$mindustryVersion"
         classpath "com.github.Anuken.Mindustry:tools:$mindustryVersion"
-        classpath "com.github.Anuken.Arc:packer:$arcHash"
+        classpath "com.github.Anuken.Arc:packer:$mindustryVersion"
         classpath 'commons-io:commons-io:2.5'
         classpath "com.github.Zelaux.ZelauxModCore:annotations:$modCoreVersion"
 //        classpath "com.github.Zelaux.GasLibrary:core:$gassesVersion"
     }
 }
 plugins{
-    id 'org.jetbrains.kotlin.jvm' version '1.4.32'
-    id "org.jetbrains.kotlin.kapt" version "1.4.32"
-    id 'groovy'
+    id 'org.jetbrains.kotlin.jvm' version '1.5.21'
+    id "org.jetbrains.kotlin.kapt" version "1.5.21"
 }
 ext{
     //the build number that this mod is made for
@@ -45,14 +43,15 @@ ext{
 
 version '1.0'
 allprojects{
-    apply plugin: 'groovy'
+    apply plugin: 'maven-publish'
 
-    version = 'release'
+//    version = 'release'
+//    group = 'com.github.Zelaux.YourGroup'
     ext{
         arcModule = { String name ->
             //skip to last submodule
             if(name.contains(':')) name = name.split(':').last()
-            return "com.github.Anuken.Arc:$name:$arcHash"
+            return "com.github.Anuken.Arc:$name:$mindustryVersion"
         }
         coreModule = { String name ->
             //skip to last submodule
@@ -208,7 +207,6 @@ project(":core"){
     }
     jar{
         exclude(mainPackage + "/entities/comp/**")
-        exclude(mainPackage + "/entities/compByAnuke/**")
     }
 }
 project(":tools"){
@@ -313,7 +311,7 @@ task mjar() {
                 from "$buildDir/libs/${project.archivesBaseName}Desktop.jar"
                 into intoPath
             }
-            println "moved into "+intoPath
+            println "Moved into "+intoPath
         }
     }
     doLast {
