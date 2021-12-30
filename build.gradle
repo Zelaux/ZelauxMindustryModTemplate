@@ -164,6 +164,7 @@ project(":core"){
         compileJava.dependsOn(preGen)
 
         implementation coreModule("core")
+        implementation coreModule("graphics")
 
         compileOnly "org.lz4:lz4-java:1.7.1"
         compileOnly arcModule("arc-core")
