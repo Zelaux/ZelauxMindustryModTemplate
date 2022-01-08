@@ -3,7 +3,7 @@ buildscript{
         mainPackage = "yourmod";
 
         mindustryVersion = 'v135'
-        modCoreVersion = "69265233121"
+        modCoreVersion = "19cdb23aea5"
     }
     repositories{
         mavenLocal()
@@ -22,7 +22,6 @@ buildscript{
         classpath "com.github.Anuken.Arc:packer:$mindustryVersion"
         classpath 'commons-io:commons-io:2.5'
         classpath "com.github.Zelaux.ZelauxModCore:annotations:$modCoreVersion"
-//        classpath "com.github.Zelaux.GasLibrary:core:$gassesVersion"
     }
 }
 plugins{
