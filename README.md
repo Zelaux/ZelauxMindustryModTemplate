@@ -11,7 +11,7 @@ To build an Android-compatible version, you need the Android SDK. You can either
 
 ## Auto move to mod folders after build (Desktop)
 
-1. Create `modDirectories.txt` file in mod root
+1. Create `modsDirectories.txt` file in mod root
 2. add your pathes(you can write `classic` and mod will be moved to the mindustry mods folder) for example:
 ```
 classic
