@@ -1,9 +1,24 @@
+import java.time.format.DateTimeFormatter
+
 buildscript{
     ext{
         mainPackage = "yourmod";
 
-        mindustryVersion = 'v135'
-        modCoreVersion = "19cdb23aea5"
+        // v7
+        mindustryPath = "com.github.Anuken.MindustryJitpack"
+        //the build number that this mod is made for
+        mindustryVersion = "68f053f409"
+        arcVersion = "ef9d6ac655"
+
+        //v6
+        //mindustryPath = "com.github.Anuken.Mindustry"
+        //the build number that this mod is made for
+        //mindustryVersion = 'v135'
+        //arcVersion=mindustryVersion
+        modCoreVersion = "226154b6388"
+
+        kotlinVersion = "1.6.0"
+        jabelVersion = "0.7.0"
     }
     repositories{
         mavenLocal()
@@ -14,68 +29,59 @@ buildscript{
     }
 
     dependencies{
-        classpath "com.github.Anuken:packr:-SNAPSHOT"
-//        classpath "com.github.Anuken.Arc:packer:$mindustryVersion"
-        classpath "com.github.Anuken.Arc:arc-core:$mindustryVersion"
-        classpath "com.github.Anuken.Mindustry:core:$mindustryVersion"
-        classpath "com.github.Anuken.Mindustry:tools:$mindustryVersion"
-        classpath "com.github.Anuken.Arc:packer:$mindustryVersion"
-        classpath 'commons-io:commons-io:2.5'
+
+        classpath "com.github.Anuken.Arc:arc-core:$arcVersion"
+        classpath "$mindustryPath:core:$mindustryVersion"
+        classpath "com.github.Anuken.Arc:packer:$arcVersion"
+
         classpath "com.github.Zelaux.ZelauxModCore:annotations:$modCoreVersion"
+
+
     }
 }
 plugins{
-    id 'org.jetbrains.kotlin.jvm' version '1.5.21'
-    id "org.jetbrains.kotlin.kapt" version "1.5.21"
+    id 'org.jetbrains.kotlin.jvm' version "$kotlinVersion"
+    id "org.jetbrains.kotlin.kapt" version "$kotlinVersion"
 }
 ext{
-    //the build number that this mod is made for
-    //version of SDK you will be using
-    sdkVersion = '30'
-    sdkRoot = System.getenv("ANDROID_HOME")
+    sdkRoot = System.getenv("ANDROID_HOME") ?: System.getenv("ANDROID_SDK_ROOT")
 
-    doExec = { cmd ->
-        def proc = cmd.execute(null, new File("$buildDir/libs"))
-        proc.waitForProcessOutput(System.out, System.err)
+    arcModule = { String name ->
+        //skip to last submodule
+        if(name.contains(':')) name = name.split(':').last()
+        return "com.github.Anuken.Arc:$name:$arcVersion"
+    }
+    coreModule = { String name ->
+        //skip to last submodule
+        if(name.contains(':')) name = name.split(':').last()
+        return "com.github.Zelaux.ZelauxModCore:$name:$modCoreVersion"
+    }
+    writeProcessors = {
+        new File(rootDir, "annotations/src/main/resources/META-INF/services/").mkdirs()
+        def processorFile = new File(rootDir, "annotations/src/main/resources/META-INF/services/javax.annotation.processing.Processor")
+        def text = new StringBuilder()
+        def files = new File(rootDir, "annotations/src/main/java")
+        files.eachFileRecurse(
+                groovy.io.FileType.FILES
+        ){ file ->
+            boolean isProcessor = file.text.contains(" extends ModBaseProcessor") ||
+                    (file.text.contains(" extends AbstractProcessor") && !file.text.contains("abstract class")) ||
+                    file.text.contains("@ModAnnotations.AnnotationProcessor");
+            if(file.name.endsWith(".java") && isProcessor){
+                text.append(file.path.substring(files.path.length() + 1)).append("\n")
+            }
+        }
+
+        processorFile.text = text.toString().replace(".java", "").replace("/", ".").replace("\\", ".")
     }
 }
 
+apply plugin: 'java'
+
 version '1.0'
+
+
 allprojects{
-    apply plugin: 'maven-publish'
-
-//    version = 'release'
-//    group = 'com.github.Zelaux.YourGroup'
-    ext{
-        arcModule = { String name ->
-            //skip to last submodule
-            if(name.contains(':')) name = name.split(':').last()
-            return "com.github.Anuken.Arc:$name:$mindustryVersion"
-        }
-        coreModule = { String name ->
-            //skip to last submodule
-            if(name.contains(':')) name = name.split(':').last()
-            return "com.github.Zelaux.ZelauxModCore:$name:$modCoreVersion"
-        }
-        writeProcessors = {
-            new File(rootDir, "annotations/src/main/resources/META-INF/services/").mkdirs()
-            def processorFile = new File(rootDir, "annotations/src/main/resources/META-INF/services/javax.annotation.processing.Processor")
-            def text = new StringBuilder()
-            def files = new File(rootDir, "annotations/src/main/java")
-            files.eachFileRecurse(
-                    groovy.io.FileType.FILES
-            ){ file ->
-                boolean isProcessor = file.text.contains(" extends ModBaseProcessor") ||
-                        (file.text.contains(" extends AbstractProcessor") && !file.text.contains("abstract class")) ||
-                        file.text.contains("@ModAnnotations.AnnotationProcessor");
-                if(file.name.endsWith(".java") && isProcessor){
-                    text.append(file.path.substring(files.path.length() + 1)).append("\n")
-                }
-            }
-
-            processorFile.text = text.toString().replace(".java", "").replace("/", ".").replace("\\", ".")
-        }
-    }
     apply plugin: 'maven-publish'
     repositories{
         mavenLocal()
@@ -87,7 +93,8 @@ allprojects{
     }
     tasks.withType(JavaCompile){
         targetCompatibility = 8
-        sourceCompatibility = JavaVersion.VERSION_16
+        //switch to JavaVersion.VERSION_17 to use Java 17 features; this requires adding jabel (see dependencies block below)
+        sourceCompatibility = 8
         options.encoding = "UTF-8"
         options.compilerArgs += ["-Xlint:deprecation"]
 
@@ -98,16 +105,6 @@ allprojects{
     }
 }
 
-dependencies{
-    implementation coreModule("core")
-}
-configure(project(":annotations")){
-    tasks.withType(JavaCompile){
-        targetCompatibility = 8
-        sourceCompatibility = 8
-        options.fork = true
-    }
-}
 
 //compile with java 8 compatibility for everything except the annotation project
 configure(subprojects - project(":annotations")){
@@ -139,25 +136,7 @@ project(":core"){
 
     task preGen{
         outputs.upToDateWhen{ false }
-//        generateLocales()
-//        writeVersion()
         writeProcessors()
-//        writePlugins()
-    }
-    task sourcesJar(type: Jar, dependsOn: classes){
-        archiveClassifier = 'sources'
-        from sourceSets.main.allSource
-    }
-
-    task assetsJar(type: Jar, dependsOn: ":tools:pack"){
-        archiveClassifier = 'assets'
-        from files("assets"){
-            exclude "config", "cache", "music", "sounds"
-        }
-    }
-    artifacts{
-        archives sourcesJar
-        archives assetsJar
     }
     dependencies{
         compileJava.dependsOn(preGen)
@@ -172,98 +151,40 @@ project(":core"){
         compileOnly arcModule("extensions:g3d")
         compileOnly arcModule("extensions:fx")
         compileOnly arcModule("extensions:arcnet")
-        compileOnly "com.github.Anuken.Mindustry:core:$mindustryVersion"
+        compileOnly "$mindustryPath:core:$mindustryVersion"
 
 
-        annotationProcessor 'com.github.Anuken:jabel:34e4c172e65b3928cd9eabe1993654ea79c409cd'
+        //you may uncomment this dependency to properly use Java 17 features while still targeting Java 8.
+        //note that this fails on some systems for as-of-yet unknown reasons - if this happens to you, revert the changes
+        //annotationProcessor "com.github.Anuken:jabel:$jabelVersion"
+//        annotationProcessor 'com.github.Anuken:jabel:34e4c172e65b3928cd9eabe1993654ea79c409cd'
 
-        compileOnly coreModule("annotations")
+        compileOnly "com.github.Zelaux.ZelauxModCore:annotations:$modCoreVersion"
         compileOnly project(":annotations")
         kapt project(":annotations")
 
     }
-
-    afterEvaluate{
-        task mergedJavadoc(type: Javadoc){
-            if(true) return null;
-            def blacklist = [project(":annotations")]
-            if(findProject(":android") != null){
-                blacklist += project(":android")
-            }
-
-            source rootProject.subprojects.collect{ project ->
-                if(!blacklist.contains(project) && project.hasProperty("sourceSets")){
-                    return project.sourceSets.main.allJava
-                }
-            }
-
-            classpath = files(rootProject.subprojects.collect{ project ->
-                if(!blacklist.contains(project) && project.hasProperty("sourceSets")){
-                    return project.sourceSets.main.compileClasspath
-                }
-            })
-            destinationDir = new File(buildDir, 'javadoc')
-        }
-    }
     jar{
         exclude(mainPackage + "/entities/comp/**")
-    }
-}
-project(":tools"){
-    apply plugin: "java"
-    dependencies{
-        implementation fileTree(dir: 'libs', include: ['*.jar'])
-        implementation 'commons-io:commons-io:2.5'
-
-        implementation project(":core")
-
-        implementation "com.github.Anuken.Mindustry:core:$mindustryVersion"
-        implementation "com.github.Anuken.Mindustry:tools:$mindustryVersion"
-
-        implementation coreModule("core")
-        implementation coreModule("tools")
-
-        implementation arcModule(":extensions:packer")
-    }
-}
-project(":annotations"){
-    apply plugin: "java-library"
-    dependencies{
-        implementation 'com.squareup:javapoet:1.12.1'
-        implementation arcModule('arc-core')
-        implementation "com.github.Anuken.Mindustry:core:$mindustryVersion"
-        implementation "com.github.Anuken.Mindustry:tools:$mindustryVersion"
-
-
-        implementation coreModule("core")
-        implementation coreModule("tools")
-        implementation coreModule("annotations")
-    }
-}
-configure([":core"].collect{ project(it) }){
-    java{
-        withJavadocJar()
-        withSourcesJar()
-    }
-
-    publishing{
-        publications{
-            maven(MavenPublication){
-                from components.java
-            }
-        }
     }
 }
 task jarAndroid{
     dependsOn "jar"
 
     doLast{
+        if(!sdkRoot || !new File(sdkRoot).exists()) throw new GradleException("No valid Android SDK found. Ensure that ANDROID_HOME is set to your Android SDK directory.");
+
+        def platformRoot = new File("$sdkRoot/platforms/").listFiles().sort().reverse().find{ f -> new File(f, "android.jar").exists() }
+
+        if(!platformRoot) throw new GradleException("No android.jar found. Ensure that you have an Android platform installed.")
+
         //collect dependencies needed for desugaring
-        def files = (project(":core").configurations.compileClasspath.asList() + project(":core").configurations.runtimeClasspath.asList() + [new File("$sdkRoot/platforms/android-$sdkVersion/android.jar")])
-        def dependencies = files.collect{ "--classpath $it.path" }.join(" ")
+        def dependencies = (project(":core").configurations.compileClasspath.asList() + project(":core").configurations.runtimeClasspath.asList() + [new File(platformRoot, "android.jar")])
+                .collect{ "--classpath $it.path" }.join(" ")
 
         //dex and desugar files - this requires d8 in your PATH
-        doExec("d8 $dependencies --min-api 14 --output ${project.archivesBaseName}Android.jar ${project.archivesBaseName}Desktop.jar")
+        "d8 $dependencies --min-api 14 --output ${project.archivesBaseName}Android.jar ${project.archivesBaseName}Desktop.jar"
+                .execute(null, new File("$buildDir/libs")).waitForProcessOutput(System.out, System.err)
     }
 }
 jar{
@@ -274,7 +195,7 @@ jar{
         project(":core").fileTree("build/libs/core.jar").collect{ it.isDirectory() ? it : zipTree(it) }
     }
     from{
-        configurations.runtimeClasspath.collect{ it.isDirectory() ? it : zipTree(it) }
+        project(":core").configurations.runtimeClasspath.collect{ it.isDirectory() ? it : zipTree(it) }
 //        project(":core").fileTree("build/libs/core.jar").collect { it.isDirectory() ? it : zipTree(it) }
     }
 
@@ -300,35 +221,41 @@ task deploy(type: Jar){
         delete{ delete "$buildDir/libs/${project.archivesBaseName}Android.jar" }
     }
 }
-task mjar() {
+task mjar(){
     dependsOn "jar"
     ext{
-        move={String intoPath ->
-            delete {
+        move = { String intoPath ->
+            delete{
                 delete "${intoPath}/${project.archivesBaseName}Desktop.jar"
             }
-            copy {
+            copy{
                 from "$buildDir/libs/${project.archivesBaseName}Desktop.jar"
                 into intoPath
             }
-            println "Moved into "+intoPath
+            println "Moved into " + intoPath
         }
     }
-    doLast {
-        def modsDirectories = [] ;
-        def file=new File(rootDir, "modsDirectories.txt");
+    doLast{
+        def modsDirectories = [];
+        def file = new File(rootDir, "modsDirectories.txt");
 //        println "abs->"+file.getAbsolutePath();
-        if (file.exists()){
-            BufferedReader reader=new BufferedReader(new FileReader(file));
-            reader.lines().forEach(line->modsDirectories.add(line))
+        if(file.exists()){
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            reader.lines().forEach(line -> modsDirectories.add(line))
+        }else{
+            modsDirectories.add("classic");
         }
-        for (String directory:modsDirectories){
-            if (directory.equals("classic")){
-                directory="${arc.util.OS.getAppDataDirectoryString("Mindustry")}/mods/";
+        for(String directory : modsDirectories){
+            if (directory.startsWith("#") || directory.startsWith("//")){
+                println "Directory \"$directory\" was skipped."
+                continue
+            }
+            if(directory.equals("classic")){
+                directory = "${arc.util.OS.getAppDataDirectoryString("Mindustry")}/mods/";
             }
             move(directory);
         }
-        def time = LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
-        System.out.println("\tlast build time: ${time}")
+        def time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
+        println "Build ended at: ${time}"
     }
 }

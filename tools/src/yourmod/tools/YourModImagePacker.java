@@ -20,7 +20,7 @@ public class YourModImagePacker extends ModImagePacker {
     protected void preCreatingContent() {
         super.preCreatingContent();
 
-//        JLEntityMapping.init();
+//        YourPrefixEntityMapping.init();
     }
 
     @Override

@@ -3,15 +3,16 @@ package yourmod;
 import mindustry.ctype.*;
 import mma.*;
 import mma.annotations.*;
+import mma.annotations.ModAnnotations.*;
 
 import static yourmod.YourModVars.*;
 
 /** If you have no sprites, music and sounds in your mod, remove the annotation after this line */
 @ModAnnotations.ModAssetsAnnotation
+@MainClass
 public class YourMod extends MMAMod{
     public YourMod(){
         super();
-
         YourModVars.load();
     }
 

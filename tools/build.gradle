@@ -1,3 +1,23 @@
+apply plugin: "java"
+dependencies{
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'commons-io:commons-io:2.5'
+
+    implementation project(":core")
+
+    implementation "$mindustryPath:core:$mindustryVersion"
+
+    implementation arcModule("natives:natives-desktop")
+    implementation arcModule("natives:natives-freetype-desktop")
+    implementation arcModule("backends:backend-headless")
+
+
+    implementation coreModule("core")
+    implementation coreModule("tools")
+
+    implementation arcModule(":extensions:packer")
+}
+
 sourceSets.main.java.srcDirs = ["src/"]
 
 
@@ -7,7 +27,7 @@ import arc.graphics.Pixmap
 import arc.packer.TexturePacker
 import arc.struct.IntIntMap
 import arc.struct.IntMap
-import arc.util.async.Threads
+import arc.util.Threads
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors

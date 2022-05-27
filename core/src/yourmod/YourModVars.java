@@ -1,11 +1,14 @@
 package yourmod;
 
 import arc.*;
+import arc.graphics.g2d.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.annotations.Annotations.*;
 import mindustry.ctype.*;
 import mindustry.game.*;
+import mindustry.world.*;
 import mma.*;
 
 public class YourModVars extends ModVars{
@@ -20,6 +23,9 @@ public class YourModVars extends ModVars{
         new YourModVars();
     }
 
+    /**
+     * Used to load this class to computer memory causing the static block work.
+     */
     public static void create(){
         //none
     }
@@ -53,28 +59,20 @@ public class YourModVars extends ModVars{
     }
 
     @Override
-    public String getFullName(String name){
-        return null;
-    }
-
-    @Override
     /**This is where you initialize your content lists. But do not forget about correct order.
      * @note correct order:
-     *  new ModItems()
-     *  new ModStatusEffects()
-     *  new ModLiquids()
-     *  new ModBullets()
-     *  new ModUnitTypes()
-     *  new ModBlocks()
-     *  new ModPlanets()
-     *  new ModSectorPresets()
-     *  new ModTechTree()
+     *  ModItems.load()
+     *  ModStatusEffects.load()
+     *  ModLiquids.load()
+     *  ModBullets.load()
+     *  ModUnitTypes.load()
+     *  ModBlocks.load()
+     *  ModPlanets.load()
+     *  ModSectorPresets.load()
+     *  ModTechTree.load()
      * */
-    public ContentList[] getContentList(){
-        return new ContentList[]{
-        };
+    public void loadContent(){
     }
-
     @Override
     protected void showException(Throwable exception){
         Log.err(exception);
