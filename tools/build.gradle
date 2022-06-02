@@ -1,9 +1,28 @@
+
+buildscript{
+
+    repositories{
+        mavenLocal()
+        mavenCentral()
+//        google()
+        maven{ url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven{ url 'https://jitpack.io' }
+    }
+    dependencies{
+        classpath "com.github.Anuken.Arc:arc-core:$arcVersion"
+        classpath "$mindustryPath:core:$mindustryVersion"
+        classpath "com.github.Anuken.Arc:packer:$arcVersion"
+
+        classpath "com.github.Zelaux.ZelauxModCore:annotations:$modCoreVersion"
+    }
+}
+
 apply plugin: "java"
 dependencies{
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'commons-io:commons-io:2.5'
 
-    implementation project(":core")
+    implementation parent
 
     implementation "$mindustryPath:core:$mindustryVersion"
 
@@ -33,7 +52,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 def imagePackerPath="yourmod.tools.YourModImagePacker"
-def genFolder = "../core/assets-raw/sprites_out/generated/"
+def genFolder = "../resources/assets-raw/sprites_out/generated/"
 def doAntialias = !project.hasProperty("disableAntialias")
 def colorMap = new IntMap<List<Color>>(), colorIndexMap = new IntIntMap()
 //on my machine, I have a native Nim AA implementation that is ~10x faster
@@ -146,18 +165,18 @@ task pack(dependsOn: [classes, configurations.runtimeClasspath]) {
     doLast {
         //cleanup old sprites
         delete {
-            delete "../core/assets-raw/sprites_out/"
+            delete "../resources/assets-raw/sprites_out/"
         }
 
         //copy in new sprites
 
         copy {
-            from "../core/assets-raw/sprites/"
-            into "../core/assets-raw/sprites_out/"
+            from "../resources/assets-raw/sprites/"
+            into "../resources/assets-raw/sprites_out/"
         }
         copy {
-            from "../core/assets/sprites-override/"
-            into "../core/assets-raw/sprites_out/"
+            from "../resources/assets/sprites-override/"
+            into "../resources/assets-raw/sprites_out/"
         }
 
         //run generation task; generate all needed sprites
@@ -173,21 +192,21 @@ task pack(dependsOn: [classes, configurations.runtimeClasspath]) {
         }
 
         copy {
-            from "../core/assets-raw/sprites_out/ui/icons"
-            into "../core/assets-raw/sprites_out/ui/"
+            from "../resources/assets-raw/sprites_out/ui/icons"
+            into "../resources/assets-raw/sprites_out/ui/"
         }
 
         delete {
-            delete "../core/assets-raw/sprites_out/ui/icons"
+            delete "../resources/assets-raw/sprites_out/ui/icons"
         }
         delete {
-            delete "../core/assets/sprites"
+            delete "../resources/assets/sprites"
         }
         ExecutorService executor = Executors.newFixedThreadPool(16)
         long ms = System.currentTimeMillis()
 
         //antialias everything except UI elements
-        fileTree(dir: new File(rootDir, 'core/assets-raw/sprites_out/').absolutePath, include: "**/*.png").visit{ file ->
+        fileTree(dir: new File(rootDir, 'resources/assets-raw/sprites_out/').absolutePath, include: "**/*.png").visit{ file ->
             if(file.isDirectory() || (file.toString().replace("\\", "/").contains("/ui/") && file.toString().startsWith("icon-")) || file.toString().contains(".9.png")) return
 
             executor.submit{
@@ -201,8 +220,8 @@ task pack(dependsOn: [classes, configurations.runtimeClasspath]) {
         println "Copy sprites start"
         ms = System.currentTimeMillis()
         copy {
-            from "../core/assets-raw/sprites_out"
-            into "../core/assets/sprites"
+            from "../resources/assets-raw/sprites_out"
+            into "../resources/assets/sprites"
         }
         println "Time taken for copieng sprites: ${(System.currentTimeMillis() - ms) / 1000f}"
     }
@@ -213,18 +232,18 @@ task badPack(dependsOn: [classes, configurations.runtimeClasspath]) {
     doLast {
         //cleanup old sprites
         delete {
-            delete "../core/assets-raw/sprites_out/"
+            delete "../resources/assets-raw/sprites_out/"
         }
 
         //copy in new sprites
 
         copy {
-            from "../core/assets-raw/sprites/"
-            into "../core/assets-raw/sprites_out/"
+            from "../resources/assets-raw/sprites/"
+            into "../resources/assets-raw/sprites_out/"
         }
         copy {
-            from "../core/assets/sprites-override/"
-            into "../core/assets-raw/sprites_out"
+            from "../resources/assets/sprites-override/"
+            into "../resources/assets-raw/sprites_out"
         }
 
         //run generation task; generate all needed sprites
@@ -240,21 +259,21 @@ task badPack(dependsOn: [classes, configurations.runtimeClasspath]) {
         }
 
         copy {
-            from "../core/assets-raw/sprites_out/ui/icons"
-            into "../core/assets-raw/sprites_out/ui/"
+            from "../resources/assets-raw/sprites_out/ui/icons"
+            into "../resources/assets-raw/sprites_out/ui/"
         }
 
         delete {
-            delete "../core/assets-raw/sprites_out/ui/icons"
+            delete "../resources/assets-raw/sprites_out/ui/icons"
         }
         delete {
-            delete "../core/assets/sprites"
+            delete "../resources/assets/sprites"
         }
         println "Copy sprites start"
         long ms = System.currentTimeMillis()
         copy {
-            from "../core/assets-raw/sprites_out"
-            into "../core/assets/sprites"
+            from "../resources/assets-raw/sprites_out"
+            into "../resources/assets/sprites"
         }
 
 
