@@ -15,7 +15,7 @@ buildscript{
         //the build number that this mod is made for
         //mindustryVersion = 'v135'
         //arcVersion=mindustryVersion
-        modCoreVersion = "226154b6388"
+        modCoreVersion = "a91c0520e04"
 
         kotlinVersion = "1.6.0"
         jabelVersion = "0.7.0"
@@ -143,6 +143,8 @@ project(":core"){
 
         implementation coreModule("core")
         implementation coreModule("graphics")
+//        implementation coreModule("utils")//extra module
+//        implementation coreModule("blocks")//extra module
 
         compileOnly "org.lz4:lz4-java:1.7.1"
         compileOnly arcModule("arc-core")
